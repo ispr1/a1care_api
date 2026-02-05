@@ -36,11 +36,11 @@ export const getUserAddresses = asyncHandler(async (req, res) => {
     }
     const address = await UserAddressModel.find({ userId, isDeleted: false })
 
-    const patient = await Patient.findOne({_id:new mongoose.Types.ObjectId(userId)})
+    const patient = await Patient.findOne({ _id: new mongoose.Types.ObjectId(userId) })
 
-    const allAddress = address.map(item=>({
-        ...item.toObject() , 
-        isPrimary:item._id.equals(patient?.primaryAddressId)
+    const allAddress = address.map(item => ({
+        ...item.toObject(),
+        isPrimary: item._id.equals(patient?.primaryAddressId as any)
     }))
 
     return res.json(new ApiResponse(200, "addresses fetched", allAddress))
@@ -70,11 +70,11 @@ export const softDeleteAddress = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Address not found or you are not authorized to delete this address")
     }
 
-    const userWithAddress = await Patient.findOneAndUpdate({ primaryAddressId: new mongoose.Types.ObjectId(addressId) }, {
+    const userWithAddress = await Patient.findOneAndUpdate({ primaryAddressId: new mongoose.Types.ObjectId(addressId) as any }, {
         $set: { primaryAddressId: null },
     })
 
-    console.log("updating user id" , userWithAddress)
+    console.log("updating user id", userWithAddress)
 
     return res.json(new ApiResponse(200, "Address deleted successfully", address))
 })
@@ -93,5 +93,5 @@ export const makePrimaryAddress = asyncHandler(async (req, res) => {
     })
     if (!checkAddress) throw new ApiError(404, "Address not exist")
     const updateAddress = await Patient.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(userId) }, { $set: { primaryAddressId: new mongoose.Types.ObjectId(addressId) } })
-    return res.status(200).json(new ApiResponse(200 , "Primary address set" , updateAddress))
+    return res.status(200).json(new ApiResponse(200, "Primary address set", updateAddress))
 })
