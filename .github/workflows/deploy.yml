@@ -33,6 +33,28 @@ jobs:
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
+          # Create docker-compose.yml
+          cat <<EOF > docker-compose.yml
+          version: '3.8'
+          services:
+            api:
+              image: ghcr.io/${{ github.repository }}:latest
+              ports:
+                - "3000:3000"
+              environment:
+                - PORT=3000
+                - REDIS_HOST=redis
+                - REDIS_PORT=6379
+              depends_on:
+                - redis
+              restart: always
+            redis:
+              image: redis:alpine
+              ports:
+                - "6379:6379"
+              restart: always
+          EOF
+
           # Stop running containers
           sudo docker compose down || true
           
