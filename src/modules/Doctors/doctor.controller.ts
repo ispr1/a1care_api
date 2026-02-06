@@ -8,7 +8,7 @@ import doctorValidation from "./doctor.schema.js";
 import jwt from 'jsonwebtoken'
 import { v1 as uuidv4 } from "uuid";
 import { hmacHash } from "../../utils/Hmac.js";
-import sendMessage from "../../configs/msg91Config.js";
+import sendMessage from "../../configs/twilioConfig.js";
 
 //create doctor 
 export const createDoctor = asyncHandler(async (req, res) => {

@@ -4,7 +4,7 @@ dotenv.config()
 
 const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
 
-const sendMessage = async (mobileNumber: number, otp: number) => {
+const sendMessage = async (mobileNumber: number | string, otp: number | string) => {
     try {
         const sendMessage = await twilioClient.messages.create({
             body: `Your otp for a1care login ${otp}, have a great day`,

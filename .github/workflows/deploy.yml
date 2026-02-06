@@ -59,8 +59,11 @@ jobs:
                 - REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
                 - REDIS_HOST=${{ secrets.REDIS_HOST }}
                 - REDIS_PORT=${{ secrets.REDIS_PORT }}
-                - MSG91_AUTH_KEY=${{ secrets.MSG91_AUTH_KEY }}
-                - MSG91_TEMPLATE_ID=${{ secrets.MSG91_TEMPLATE_ID }}
+                - REDIS_HOST=${{ secrets.REDIS_HOST }}
+                - REDIS_PORT=${{ secrets.REDIS_PORT }}
+                - TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }}
+                - TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }}
+                - TWILIO_PHONE_NUMBER=${{ secrets.TWILIO_PHONE_NUMBER }}
               restart: always
           EOF
 
