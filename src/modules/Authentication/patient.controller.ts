@@ -7,66 +7,69 @@ import { patientValidation } from "./patient.schema.js";
 import mongoose from 'mongoose';
 import RedisClient from '../../configs/redisConnect.js';
 import generateOtp from '../../utils/generateOtp.js';
+import sendMessage from '../../configs/twilioConfig.js';
 
-export const getPatientDetailsById = asyncHandler(async(req ,res)=>{
-    const patientId = req.user?.id
-    const userDetails = await Patient.findById(patientId).populate('primaryAddressId')
+export const getPatientDetailsById = asyncHandler(async (req, res) => {
+  const patientId = req.user?.id
+  const userDetails = await Patient.findById(patientId).populate('primaryAddressId')
 
-   
-    if(userDetails)return res.status(200).json(new ApiResponse(200, "data fetched" , userDetails))
-    else{
-        throw new ApiError(404 , "No user found")    
-    }
+
+  if (userDetails) return res.status(200).json(new ApiResponse(200, "data fetched", userDetails))
+  else {
+    throw new ApiError(404, "No user found")
+  }
 })
 
-export const sentOtpForPatient = asyncHandler(async (req , res)=>{
-    const {mobileNumber} = req.body
-    if(!mobileNumber){
-        throw new ApiError(401 , "validation failed!")
-    }
+export const sentOtpForPatient = asyncHandler(async (req, res) => {
+  const { mobileNumber } = req.body
+  if (!mobileNumber) {
+    throw new ApiError(401, "validation failed!")
+  }
 
-    // rate limiting and otp logic
-    //random otp
-    const otp = generateOtp()
-    RedisClient.setEx(`otp:${mobileNumber}` , 300 , JSON.stringify(otp))
+  // rate limiting and otp logic
+  //random otp
+  const otp = generateOtp()
+  const otp = generateOtp()
+  await RedisClient.setEx(`otp:${mobileNumber}`, 300, JSON.stringify(otp))
+  await sendMessage(mobileNumber, otp)
 
-    return res.json(new ApiResponse(201 , "OTP sent successfully" , {mobileNumber}))
+  return res.json(new ApiResponse(201, "OTP sent successfully", { mobileNumber }))
 })
 
 // verify otp 
-export const verifyOtpForPatient = asyncHandler(async (req , res)=>{
-    const {mobileNumber , otp} = req.body
+export const verifyOtpForPatient = asyncHandler(async (req, res) => {
+  const { mobileNumber, otp } = req.body
 
-    if(!mobileNumber || !otp){
-        throw new ApiError(401 ,  "Validation failed!")
+  if (!mobileNumber || !otp) {
+    throw new ApiError(401, "Validation failed!")
+  }
+
+  const redisOtp = await RedisClient.get(`otp:${mobileNumber}`)
+  console.log("this is redis otp", redisOtp)
+
+  if (Number(otp) === 123123) {
+    let isExists = await Patient.findOne({ mobileNumber })
+    console.log('before happening this one..', isExists)
+    if (!isExists) {
+      const newPatient = new Patient({
+        mobileNumber
+      })
+
+      await newPatient.save()
+      isExists = newPatient
     }
+    const token = jwt.sign({ mobileNumber, userId: isExists._id }, process.env.JWT_SECRET as string)
+    console.log("token is generated...", token)
 
-   const redisOtp = await RedisClient.get(`otp:${mobileNumber}`)
-   console.log("this is redis otp" , redisOtp)
-
-    if(Number(otp) === 123123){
-        let isExists = await Patient.findOne({mobileNumber})
-        console.log( 'before happening this one..' , isExists)
-        if(!isExists){
-            const newPatient = new Patient({
-                    mobileNumber
-            })
-
-            await newPatient.save() 
-            isExists = newPatient
-        }
-        const token = jwt.sign({mobileNumber , userId:isExists._id}, process.env.JWT_SECRET as string )
-        console.log("token is generated..." , token)
-        
-        return res.status(201).json(new ApiResponse(201 , "verification successfull" , {token}))
-    }else{
-        throw new ApiError(404 , "Invalid OTP!")
-    }
+    return res.status(201).json(new ApiResponse(201, "verification successfull", { token }))
+  } else {
+    throw new ApiError(404, "Invalid OTP!")
+  }
 })
 
 export const updateProfile = asyncHandler(async (req, res) => {
   // 1. Validate input
-  console.log("this is the body we are getting.." , req.body)
+  console.log("this is the body we are getting..", req.body)
   const parsed = patientValidation.safeParse(req.body);
   if (!parsed.success) {
     throw new ApiError(
@@ -76,11 +79,11 @@ export const updateProfile = asyncHandler(async (req, res) => {
   }
 
   // 2. Get patient id from auth middleware
-  const patientId = req.user?.id 
+  const patientId = req.user?.id
 
   // 3. Update profile
   const updatedPatient = await Patient.findByIdAndUpdate(
-    {_id:patientId},
+    { _id: patientId },
     {
       $set: {
         name: parsed.data.name,
