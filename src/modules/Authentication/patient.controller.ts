@@ -47,7 +47,11 @@ export const verifyOtpForPatient = asyncHandler(async (req, res) => {
   const redisOtp = await RedisClient.get(`otp:${mobileNumber}`)
   console.log("this is redis otp", redisOtp)
 
-  if (Number(otp) === 123123) {
+  if (!redisOtp) {
+    throw new ApiError(400, "OTP expired or invalid")
+  }
+
+  if (Number(redisOtp) === Number(otp)) {
     let isExists = await Patient.findOne({ mobileNumber })
     console.log('before happening this one..', isExists)
     if (!isExists) {
