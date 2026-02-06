@@ -51,7 +51,12 @@ jobs:
                 - TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }}
                 - TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }}
                 - TWILIO_PHONE_NUMBER=${{ secrets.TWILIO_PHONE_NUMBER }}
+                - TWILIO_PHONE_NUMBER=${{ secrets.TWILIO_PHONE_NUMBER }}
                 - S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}
+                - JWT_SECRET=${{ secrets.JWT_SECRET }}
+                - AUTH_SECRET_TOKEN=${{ secrets.AUTH_SECRET_TOKEN }}
+                - REDIS_USERNAME=${{ secrets.REDIS_USERNAME }}
+                - REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
               depends_on:
                 - redis
               restart: always
