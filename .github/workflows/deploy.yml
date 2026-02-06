@@ -57,13 +57,8 @@ jobs:
                 - AUTH_SECRET_TOKEN=${{ secrets.AUTH_SECRET_TOKEN }}
                 - REDIS_USERNAME=${{ secrets.REDIS_USERNAME }}
                 - REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
-              depends_on:
-                - redis
-              restart: always
-            redis:
-              image: redis:alpine
-              ports:
-                - "6379:6379"
+                - REDIS_HOST=${{ secrets.REDIS_HOST }}
+                - REDIS_PORT=${{ secrets.REDIS_PORT }}
               restart: always
           EOF
 
