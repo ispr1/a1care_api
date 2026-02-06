@@ -29,7 +29,7 @@ export const sentOtpForPatient = asyncHandler(async (req, res) => {
   // rate limiting and otp logic
   //random otp
   const otp = generateOtp()
-  const otp = generateOtp()
+
   await RedisClient.setEx(`otp:${mobileNumber}`, 300, JSON.stringify(otp))
   await sendMessage(mobileNumber, otp)
 
