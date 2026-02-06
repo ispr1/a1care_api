@@ -7,7 +7,7 @@ import { patientValidation } from "./patient.schema.js";
 import mongoose from 'mongoose';
 import RedisClient from '../../configs/redisConnect.js';
 import generateOtp from '../../utils/generateOtp.js';
-import sendMessage from '../../configs/twilioConfig.js';
+import sendMessage from '../../configs/msg91Config.js';
 
 export const getPatientDetailsById = asyncHandler(async (req, res) => {
   const patientId = req.user?.id
