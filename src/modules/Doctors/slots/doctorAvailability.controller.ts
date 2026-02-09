@@ -8,55 +8,57 @@ import doctorAvailabilityModel from "./doctorAvailability.model.js";
 import doctorAvailabilityValidation from "./doctorAvailable.schema.js";
 import mongoose from "mongoose";
 
-export const createDoctorAvailability = asyncHandler(async (req , res)=>{
-    const {doctorId} = req.params // for testing we are taking doctor id from params afther authentication it should come from middleware
-    const payload = {
-        ...req.body  , 
-        doctorId
-    }
+export const createDoctorAvailability = asyncHandler(async (req, res) => {
+  const doctorId = req.user?.id // for testing we are taking doctor id from params afther authentication it should come from middleware
+  const payload = {
+    ...req.body,
+    doctorId
+  }
 
-    const parsed = doctorAvailabilityValidation.safeParse(payload)
-    if(!parsed.success){
-        throw new ApiError(401 , "Validation failed")
-    }
+  const parsed = doctorAvailabilityValidation.safeParse(payload)
+  if (!parsed.success) {
+    throw new ApiError(401, "Validation failed")
+  }
 
-    const newDoctorValidation = new doctorAvailabilityModel(payload)
-    await newDoctorValidation.save()
+  const newDoctorValidation = new doctorAvailabilityModel(payload)
+  await newDoctorValidation.save()
 
-    return res.status(201).json(new ApiResponse(201 , "Doctor availability created" , newDoctorValidation))
+  return res.status(201).json(new ApiResponse(201, "Doctor availability created", newDoctorValidation))
 
 })
 
-export const getDoctorAvailabilitybyDoctorId = asyncHandler(async (req , res)=>{
-    const {doctorId} = req.params
-    const doctorAvailability = await doctorAvailabilityModel.find({doctorId:new mongoose.Schema.Types.ObjectId(doctorId as string)})
-    return res.status(200).json(new ApiResponse(200 , "Doctor availability" , doctorAvailability))
+export const getDoctorAvailabilitybyDoctorId = asyncHandler(async (req, res) => {
+  const { doctorId } = req.params
+  const doctorAvailability = await doctorAvailabilityModel.find({ doctorId: new mongoose.Schema.Types.ObjectId(doctorId as string) })
+  return res.status(200).json(new ApiResponse(200, "Doctor availability", doctorAvailability))
 })
 
 // block timings
-export const blockTiming = asyncHandler(async (req , res)=>{
-    const {doctorId} = req.params
-    const payload = {
-        ...req.body ,
-        date:new Date(req.body.date),
-        doctorId
-    }
+export const blockTiming = asyncHandler(async (req, res) => {
+  const { doctorId } = req.params
+  const payload = {
+    ...req.body,
+    date: new Date(req.body.date),
+    doctorId
+  }
 
-    const parsed = doctoBlockTimeValidations.safeParse(payload)
-    if(!parsed.success){
-        console.error("Error in blocking time" , parsed.error)
-        throw new ApiError(401 , "Validation failed")
-    }
+  const parsed = doctoBlockTimeValidations.safeParse(payload)
+  if (!parsed.success) {
+    console.error("Error in blocking time", parsed.error)
+    throw new ApiError(401, "Validation failed")
+  }
 
-     const newBlockTime =  new blockTimeModel(payload)
-     await newBlockTime.save()
-     return res.status(201).json(new ApiResponse(201 , "Timings are blocked" , newBlockTime))
+  const newBlockTime = new blockTimeModel(payload)
+  await newBlockTime.save()
+  return res.status(201).json(new ApiResponse(201, "Timings are blocked", newBlockTime))
 })
 
 
 //Available slots for doctor
 export const availableSlotByDoctorId = asyncHandler(async (req, res) => {
-  const { doctorId, date } = req.params;
+  const doctorId = req.user?.id
+  const { date } = req.params;
+  console.log(date, doctorId)
 
   if (!doctorId || !date) {
     throw new ApiError(400, "Missing doctorId or date");
@@ -105,7 +107,7 @@ export const availableSlotByDoctorId = asyncHandler(async (req, res) => {
     doctorId: new mongoose.Types.ObjectId(doctorId),
     date: parsedDate
   });
-  console.log("these are booked appointments" , bookedAppointments)
+  console.log("these are booked appointments", bookedAppointments)
 
   // 7️⃣ Normalize all unavailable intervals into Date objects
   const busySlots = [
@@ -125,22 +127,22 @@ export const availableSlotByDoctorId = asyncHandler(async (req, res) => {
   const availableSlots = slots.filter(slot =>
     // If today, filter out past time slots
     (isToday
-      ? slot.startSlot > new Date() 
+      ? slot.startSlot > new Date()
       : true) &&
     // Check if slot overlaps with any busy slot
 
-    !busySlots.some(busy => 
+    !busySlots.some(busy =>
       slot.startSlot < busy.endingTime &&
       slot.endSlot > busy.startingTime
     )
   );
 
   // ✅ RETURN AVAILABLE SLOTS (NOT slots)
-  let readableSlots = availableSlots.map(item=>({
-    startingTime:readableTimeFormate(item.startSlot) ,
-    endingTime:readableTimeFormate(item.endSlot)
+  let readableSlots = availableSlots.map(item => ({
+    startingTime: readableTimeFormate(item.startSlot),
+    endingTime: readableTimeFormate(item.endSlot)
   }))
-  
+
   return res.json(
     new ApiResponse(200, "Available Slots", readableSlots)
   );

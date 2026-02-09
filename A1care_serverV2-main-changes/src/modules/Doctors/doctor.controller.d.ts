@@ -1,0 +1,9 @@
+export declare const createDoctor: (req: import("express").Request, res: import("express").Response, next: import("express").NextFunction) => void;
+export declare const getDoctorById: (req: import("express").Request, res: import("express").Response, next: import("express").NextFunction) => void;
+export declare const getStaffByRoleId: (req: import("express").Request, res: import("express").Response, next: import("express").NextFunction) => void;
+export declare const sendOtpForStaff: (req: import("express").Request, res: import("express").Response, next: import("express").NextFunction) => void;
+export declare const verifyOtp: (req: import("express").Request, res: import("express").Response, next: import("express").NextFunction) => void;
+export declare const getStaffDetials: (req: import("express").Request, res: import("express").Response, next: import("express").NextFunction) => void;
+export declare const checkOtpStatus: (req: import("express").Request, res: import("express").Response, next: import("express").NextFunction) => void;
+export declare const registerStaff: (req: import("express").Request, res: import("express").Response, next: import("express").NextFunction) => void;
+//# sourceMappingURL=doctor.controller.d.ts.map

@@ -1,37 +1,44 @@
+import mongoose from "mongoose";
 import { ApiError } from "../../utils/ApiError.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import asyncHandler from "../../utils/asyncHandler.js";
 import doctorAppoinmentValidations from "./doctoAppointments.schema.js";
 import doctorAppointmentModel from "./doctorAppointment.model.js";
 
-export const createDoctorAppointment = asyncHandler(async (req , res)=>{
+export const createDoctorAppointment = asyncHandler(async (req, res) => {
     const patientId = req.user?.id
-    console.log("this is request body" , req.body)
-    const {doctorId} = req.params
+    console.log("this is request body", req.body)
+    const { doctorId } = req.params
     const payload = {
-        ...req.body , 
-        doctorId , 
-        patientId ,
+        ...req.body,
+        doctorId,
+        patientId,
     }
 
     const parsed = doctorAppoinmentValidations.safeParse(payload)
-    if(!parsed.success){
-        console.error("Error in creating doctor appointment" , parsed.error)
-        throw new ApiError(401 , `Validation failed! ${parsed.error}`)
+    if (!parsed.success) {
+        console.error("Error in creating doctor appointment", parsed.error)
+        throw new ApiError(401, `Validation failed! ${parsed.error}`)
     }
 
     const newAppointment = new doctorAppointmentModel(parsed.data)
     await newAppointment.save()
-    return res.status(201).json(new ApiResponse(201 , "Appointment booked" , newAppointment))
+    return res.status(201).json(new ApiResponse(201, "Appointment booked", newAppointment))
 
 })
 
 // get appointments by doctor id
-
+export const getPendingAppointmentbyProviderId = asyncHandler(async (req, res) => {
+    const providerId = req.user?.id;
+    const { status } = req.query
+    if (!providerId) throw new ApiError(401, "Provider id not found");
+    const pendingAppointments = await doctorAppointmentModel.find({ doctorId: new mongoose.Types.ObjectId(providerId), status: { $in: ["Pending", "Confirmed"] } })
+    return res.json(new ApiResponse(200, "fetch appointment details", pendingAppointments))
+})
 
 //get appointment by patient id 
-export const getAppointmentsByPatientId = asyncHandler(async (req , res)=>{
+export const getAppointmentsByPatientId = asyncHandler(async (req, res) => {
     const patientId = req.user?.id
-    const appointments = await doctorAppointmentModel.find({patientId:patientId as string}).populate('doctorId').populate('patientId')
-    return res.status(200).json(new ApiResponse(200 , "Appointments fetched" , appointments))
+    const appointments = await doctorAppointmentModel.find({ patientId: patientId as string }).populate('doctorId').populate('patientId')
+    return res.status(200).json(new ApiResponse(200, "Appointments fetched", appointments))
 })
